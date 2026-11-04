@@ -311,6 +311,16 @@ class AudioPlayerService extends ChangeNotifier {
 
   Future<void> playNext() async {
     if (_currentSurah == null) return;
+    final offlineNumbers = await _downloadManager.getDownloadedSurahNumbers(_currentReciter.id);
+    if (offlineNumbers.isNotEmpty && !await _checkInternet()) {
+      // In offline mode: smoothly advance to the next available offline surah
+      final currentIndex = offlineNumbers.indexOf(_currentSurah!.number);
+      int nextIndex = (currentIndex + 1) % offlineNumbers.length;
+      final nextSurah = QuranData.getSurah(offlineNumbers[nextIndex]);
+      await playSurah(nextSurah, forceReload: true);
+      return;
+    }
+
     int nextNum = _currentSurah!.number + 1;
     if (nextNum > 114) nextNum = 1;
     final nextSurah = QuranData.getSurah(nextNum);
@@ -319,6 +329,16 @@ class AudioPlayerService extends ChangeNotifier {
 
   Future<void> playPrevious() async {
     if (_currentSurah == null) return;
+    final offlineNumbers = await _downloadManager.getDownloadedSurahNumbers(_currentReciter.id);
+    if (offlineNumbers.isNotEmpty && !await _checkInternet()) {
+      // In offline mode: smoothly advance to the previous available offline surah
+      final currentIndex = offlineNumbers.indexOf(_currentSurah!.number);
+      int prevIndex = currentIndex <= 0 ? offlineNumbers.length - 1 : currentIndex - 1;
+      final prevSurah = QuranData.getSurah(offlineNumbers[prevIndex]);
+      await playSurah(prevSurah, forceReload: true);
+      return;
+    }
+
     int prevNum = _currentSurah!.number - 1;
     if (prevNum < 1) prevNum = 114;
     final prevSurah = QuranData.getSurah(prevNum);

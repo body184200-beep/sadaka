@@ -22,7 +22,7 @@ class _HomeScreenState extends State<HomeScreen> {
   final DownloadManager _downloadManager = DownloadManager();
 
   String _searchQuery = '';
-  String _selectedFilter = 'all';
+  String _selectedFilter = 'offline';
   final TextEditingController _searchController = TextEditingController();
 
   @override
@@ -85,13 +85,25 @@ class _HomeScreenState extends State<HomeScreen> {
         return Scaffold(
           appBar: AppBar(
             elevation: 0,
-            title: const Row(
+            title: Row(
               children: [
-                Icon(Icons.menu_book_rounded, color: Color(0xFFD4AF37), size: 24),
-                SizedBox(width: 8),
-                Text(
-                  'القرآن الكريم الصوتي',
-                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
+                const Icon(Icons.menu_book_rounded, color: Color(0xFFD4AF37), size: 24),
+                const SizedBox(width: 8),
+                const Text(
+                  'القرآن الكريم',
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 19),
+                ),
+                const SizedBox(width: 6),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF2E7D32),
+                    borderRadius: BorderRadius.circular(6),
+                  ),
+                  child: const Text(
+                    'بدون نت',
+                    style: TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold),
+                  ),
                 ),
               ],
             ),
@@ -366,14 +378,14 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                 ),
 
-                // Filter Chips
+                // Filter Chips (Offline by default)
                 SingleChildScrollView(
                   scrollDirection: Axis.horizontal,
                   padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
                   child: Row(
                     children: [
+                      _filterChip('offline', 'سور أوفلاين بدون نت (${offlineNumbers.length})'),
                       _filterChip('all', 'جميع السور (114)'),
-                      _filterChip('offline', 'جاهزة أوفلاين بدون نت (${offlineNumbers.length})'),
                       _filterChip('favorites', 'المفضلة (${_playerService.favoriteSurahs.length})'),
                       _filterChip('makki', 'مكية (86)'),
                       _filterChip('madani', 'مدنية (28)'),
