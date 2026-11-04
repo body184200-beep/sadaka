@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 import 'package:audio_session/audio_session.dart';
 import 'package:flutter/foundation.dart';
 import 'package:just_audio/just_audio.dart';
@@ -179,6 +180,16 @@ class AudioPlayerService extends ChangeNotifier {
     await playSurah(surah, reciter: targetReciter, forceReload: true, autoPlay: true);
   }
 
+  Future<bool> _checkInternet() async {
+    if (kIsWeb) return true;
+    try {
+      final lookup = await InternetAddress.lookup('dns.google').timeout(const Duration(seconds: 2));
+      return lookup.isNotEmpty && lookup[0].rawAddress.isNotEmpty;
+    } catch (_) {
+      return false;
+    }
+  }
+
   Future<void> playSurah(
     Surah surah, {
     Reciter? reciter,
@@ -211,16 +222,27 @@ class AudioPlayerService extends ChangeNotifier {
         _isOfflinePlayback = true;
         if (offlineSource.startsWith('asset:')) {
           final assetPath = offlineSource.substring(6);
-          await _player.setAudioSource(AudioSource.asset(assetPath));
+          await _player.setAsset(assetPath);
         } else if (offlineSource.startsWith('file:')) {
           final filePath = offlineSource.substring(5);
-          await _player.setAudioSource(AudioSource.file(filePath));
+          await _player.setFilePath(filePath);
         }
       } else {
+        // Not offline: check internet before attempting to stream so we don't freeze on buffering
+        if (!kIsWeb) {
+          final hasInternet = await _checkInternet();
+          if (!hasInternet) {
+            _isBuffering = false;
+            _errorMessage = 'سورة ${surah.name} غير مدمجة أوفلاين للقارئ (${_currentReciter.name})، يرجى تشغيل الإنترنت لتشغيلها أو اختيار سورة مدمجة بدون نت من قائمة «جاهزة أوفلاين».';
+            notifyListeners();
+            return;
+          }
+        }
+
         // Stream online AND automatically cache in background
         _isOfflinePlayback = false;
         final url = _currentReciter.getSurahAudioUrl(surah.number);
-        await _player.setAudioSource(AudioSource.uri(Uri.parse(url)));
+        await _player.setUrl(url).timeout(const Duration(seconds: 8));
 
         // Silently cache for offline playback automatically (mobile/desktop)
         _downloadManager.autoCacheSurahInBackground(_currentReciter, surah);
@@ -237,7 +259,8 @@ class AudioPlayerService extends ChangeNotifier {
     } catch (e) {
       _loadedAudioReciterId = null;
       _loadedAudioSurahNumber = null;
-      _errorMessage = 'تعذر تشغيل تلاوة القارئ (${_currentReciter.name})، يرجى التأكد من الاتصال بالإنترنت.';
+      _isBuffering = false;
+      _errorMessage = 'تعذر تشغيل سورة ${surah.name} للقارئ (${_currentReciter.name}). يرجى التحقق من اتصال الإنترنت أو اختيار سورة أوفلاين.';
       notifyListeners();
     }
   }

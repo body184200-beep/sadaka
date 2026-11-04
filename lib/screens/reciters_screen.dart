@@ -95,6 +95,23 @@ class RecitersScreen extends StatelessWidget {
                               color: Color(0xFF2E7D32),
                             ),
                           ),
+                        )
+                      else
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                          decoration: BoxDecoration(
+                            color: Colors.grey.withValues(alpha: 0.1),
+                            borderRadius: BorderRadius.circular(6),
+                            border: Border.all(color: Colors.grey.withValues(alpha: 0.25), width: 0.8),
+                          ),
+                          child: const Text(
+                            'تلاوة بالإنترنت',
+                            style: TextStyle(
+                              fontSize: 10,
+                              fontWeight: FontWeight.w600,
+                              color: Colors.grey,
+                            ),
+                          ),
                         ),
                     ],
                   ),

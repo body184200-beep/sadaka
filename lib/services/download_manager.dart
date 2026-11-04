@@ -14,16 +14,24 @@ class DownloadManager extends ChangeNotifier {
   final Map<String, CancelToken> _cancelTokens = {};
   final Map<String, double> _downloadProgress = {};
 
-  // List of pre-bundled surah numbers in assets/audio/
-  static const List<int> _commonBundledSurahs = [
-    1, 67, 93, 94, 95, 96, 97, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114
+  // List of pre-bundled surahs in assets/audio/
+  // For Mishari Alafasy: Al-Fatiha, Al-Kahf, Yasin, Ar-Rahman, Al-Waqi'ah, Al-Mulk, and entire Juz' Amma (78-114) = 43 surahs!
+  static const List<int> _afsBundledSurahs = [
+    1, 18, 36, 55, 56, 67,
+    78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114,
+  ];
+
+  // For Abdulbasit, Al-Husari, Minshawi: Al-Fatiha, Al-Mulk, Ad-Duha to An-Nas (including 98, 99) = 24 surahs!
+  static const List<int> _otherBundledSurahs = [
+    1, 67,
+    93, 94, 95, 96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114,
   ];
 
   static const Map<String, List<int>> _bundledAssets = {
-    'afs': _commonBundledSurahs,
-    'basit': _commonBundledSurahs,
-    'husr': _commonBundledSurahs,
-    'minsh': _commonBundledSurahs,
+    'afs': _afsBundledSurahs,
+    'basit': _otherBundledSurahs,
+    'husr': _otherBundledSurahs,
+    'minsh': _otherBundledSurahs,
   };
 
   Map<String, double> get downloadProgress => _downloadProgress;
@@ -211,8 +219,6 @@ class DownloadManager extends ChangeNotifier {
     final list = <int>{};
     if (_bundledAssets.containsKey(reciterId)) {
       list.addAll(_bundledAssets[reciterId]!);
-    } else {
-      list.addAll(_commonBundledSurahs);
     }
 
     if (!kIsWeb) {

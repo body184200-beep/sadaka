@@ -383,6 +383,41 @@ class _HomeScreenState extends State<HomeScreen> {
 
                 const SizedBox(height: 4),
 
+                if (_playerService.errorMessage != null)
+                  Container(
+                    margin: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFFFF3CD),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: const Color(0xFFFFEEBA)),
+                    ),
+                    child: Row(
+                      children: [
+                        const Icon(Icons.wifi_off_rounded, color: Color(0xFF856404), size: 20),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            _playerService.errorMessage!,
+                            style: const TextStyle(
+                              color: Color(0xFF856404),
+                              fontSize: 11.5,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                        TextButton(
+                          onPressed: () => setState(() => _selectedFilter = 'offline'),
+                          style: TextButton.styleFrom(
+                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                            minimumSize: Size.zero,
+                          ),
+                          child: const Text('السور الأوفلاين', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold)),
+                        ),
+                      ],
+                    ),
+                  ),
+
                 // Surahs List
                 Expanded(
                   child: filteredSurahs.isEmpty

@@ -111,6 +111,30 @@ class SurahListTile extends StatelessWidget {
                         ),
                       ],
                     ),
+                  )
+                else
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
+                    decoration: BoxDecoration(
+                      color: Colors.grey.withValues(alpha: 0.08),
+                      borderRadius: BorderRadius.circular(6),
+                      border: Border.all(color: Colors.grey.withValues(alpha: 0.2), width: 0.8),
+                    ),
+                    child: const Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(Icons.cloud_outlined, size: 12, color: Colors.grey),
+                        SizedBox(width: 3),
+                        Text(
+                          'تحتاج نت',
+                          style: TextStyle(
+                            fontSize: 10,
+                            fontWeight: FontWeight.w600,
+                            color: Colors.grey,
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
               ],
             ),
