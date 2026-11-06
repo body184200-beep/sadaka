@@ -14,11 +14,9 @@ enum QuranRepeatMode { none, one, all }
 class AudioPlayerService extends ChangeNotifier {
   static final AudioPlayerService _instance = AudioPlayerService._internal();
   factory AudioPlayerService() => _instance;
-  AudioPlayerService._internal() {
-    _init();
-  }
 
-  final AudioPlayer _player = AudioPlayer();
+  late final AudioPlayer _player;
+  late final AndroidLoudnessEnhancer? _loudnessEnhancer;
   final DownloadManager _downloadManager = DownloadManager();
 
   Surah? _currentSurah;
@@ -37,6 +35,26 @@ class AudioPlayerService extends ChangeNotifier {
   int? _loadedAudioSurahNumber;
 
   final Set<int> _favoriteSurahs = {};
+  double _loudnessGain = 18.0; // Extreme boost in dB (up to 20 dB maximum)
+  bool _isLoudnessBoostEnabled = true;
+  final ValueNotifier<Duration> positionNotifier = ValueNotifier<Duration>(Duration.zero);
+
+  AudioPlayerService._internal() {
+    if (!kIsWeb && Platform.isAndroid) {
+      _loudnessEnhancer = AndroidLoudnessEnhancer();
+      _player = AudioPlayer(
+        audioPipeline: AudioPipeline(
+          androidAudioEffects: [
+            _loudnessEnhancer!,
+          ],
+        ),
+      );
+    } else {
+      _loudnessEnhancer = null;
+      _player = AudioPlayer();
+    }
+    _init();
+  }
 
   AudioPlayer get player => _player;
   Surah? get currentSurah => _currentSurah;
@@ -50,7 +68,8 @@ class AudioPlayerService extends ChangeNotifier {
   String? get errorMessage => _errorMessage;
   Set<int> get favoriteSurahs => _favoriteSurahs;
   bool get isPlaying => _player.playing;
-  Duration get position => _player.position;
+  Duration get position => positionNotifier.value;
+  Stream<Duration> get positionStream => _player.positionStream;
 
   Duration get duration {
     final d = _player.duration;
@@ -67,13 +86,45 @@ class AudioPlayerService extends ChangeNotifier {
     return diff > 0 ? diff + 1 : 0;
   }
 
+  double get loudnessGain => _loudnessGain;
+  bool get isLoudnessBoostEnabled => _isLoudnessBoostEnabled;
+  bool get hasLoudnessEnhancer => _loudnessEnhancer != null;
+
+  Future<void> applyMaximumVolumeSettings() async {
+    try {
+      await _player.setVolume(1.0);
+      if (_loudnessEnhancer != null) {
+        await _loudnessEnhancer!.setEnabled(_isLoudnessBoostEnabled);
+        if (_isLoudnessBoostEnabled) {
+          await _loudnessEnhancer!.setTargetGain(_loudnessGain);
+        }
+      }
+    } catch (_) {}
+  }
+
+  Future<void> setLoudnessGain(double gain) async {
+    _loudnessGain = gain.clamp(0.0, 20.0);
+    _isLoudnessBoostEnabled = _loudnessGain > 0;
+    await applyMaximumVolumeSettings();
+    notifyListeners();
+  }
+
+  Future<void> toggleLoudnessBoost() async {
+    _isLoudnessBoostEnabled = !_isLoudnessBoostEnabled;
+    await applyMaximumVolumeSettings();
+    notifyListeners();
+  }
+
   Future<void> _init() async {
     try {
       if (!kIsWeb) {
         final session = await AudioSession.instance;
         await session.configure(const AudioSessionConfiguration.music());
+        await session.setActive(true);
       }
     } catch (_) {}
+
+    await applyMaximumVolumeSettings();
 
     _player.playerStateStream.listen((state) {
       _isBuffering = state.processingState == ProcessingState.buffering;
@@ -83,20 +134,22 @@ class AudioPlayerService extends ChangeNotifier {
       notifyListeners();
     });
 
-    _player.positionStream.listen((_) => notifyListeners());
+    _player.positionStream.listen((pos) {
+      positionNotifier.value = pos;
+    });
 
     _player.durationStream.listen((dur) {
-      if (dur != null && dur > Duration.zero) {
+      if (dur != null && dur > Duration.zero && dur != _cachedDuration) {
         _cachedDuration = dur;
+        notifyListeners();
       }
-      notifyListeners();
     });
 
     _player.playbackEventStream.listen((event) {
-      if (event.duration != null && event.duration! > Duration.zero) {
+      if (event.duration != null && event.duration! > Duration.zero && event.duration! != _cachedDuration) {
         _cachedDuration = event.duration!;
+        notifyListeners();
       }
-      notifyListeners();
     });
 
     await _loadPreferences();
@@ -251,6 +304,7 @@ class AudioPlayerService extends ChangeNotifier {
       _loadedAudioReciterId = _currentReciter.id;
       _loadedAudioSurahNumber = surah.number;
       await _player.setSpeed(_speed);
+      await applyMaximumVolumeSettings();
 
       if (autoPlay) {
         await _player.play();
@@ -280,12 +334,16 @@ class AudioPlayerService extends ChangeNotifier {
     if (_player.playing) {
       await _player.pause();
     } else {
+      await applyMaximumVolumeSettings();
       await _player.play();
     }
     notifyListeners();
   }
 
-  Future<void> play() async => await _player.play();
+  Future<void> play() async {
+    await applyMaximumVolumeSettings();
+    await _player.play();
+  }
   Future<void> pause() async => await _player.pause();
 
   Future<void> seek(Duration targetPosition) async {

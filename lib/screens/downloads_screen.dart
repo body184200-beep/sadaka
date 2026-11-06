@@ -76,7 +76,7 @@ class _DownloadsScreenState extends State<DownloadsScreen> {
                     ),
                     const SizedBox(height: 8),
                     const Text(
-                      'جميع السور الموضحة أدناه جاهزة للاستماع فوراً بدون أي اتصال بالإنترنت أو الحاجة للتحميل المسبق.',
+                      'المصحف المرتل كاملاً (114 سورة) مدمج بالكامل أوفلاين بصوت الشيخ محمد صديق المنشاوي بجودة نقية وفائقة العلو، وجاهز للاستماع في أي وقت بدون إنترنت.',
                       style: TextStyle(
                         color: Colors.white,
                         fontSize: 13,
@@ -126,10 +126,14 @@ class _DownloadsScreenState extends State<DownloadsScreen> {
 
                 return ListView.builder(
                   itemCount: downloadedNumbers.length,
+                  physics: const BouncingScrollPhysics(),
+                  cacheExtent: 600,
+                  addRepaintBoundaries: true,
                   itemBuilder: (context, index) {
                     final surahNum = downloadedNumbers[index];
                     final surah = QuranData.getSurah(surahNum);
                     return SurahListTile(
+                      key: ValueKey(surah.number),
                       surah: surah,
                       onTap: () {
                         final isCurrent = _playerService.currentSurah?.number == surah.number;

@@ -8,6 +8,14 @@ void main() async {
     DeviceOrientation.portraitUp,
     DeviceOrientation.portraitDown,
   ]);
+  SystemChrome.setSystemUIOverlayStyle(
+    const SystemUiOverlayStyle(
+      statusBarColor: Colors.transparent,
+      statusBarIconBrightness: Brightness.light,
+      systemNavigationBarColor: Color(0xFF07261D),
+      systemNavigationBarIconBrightness: Brightness.light,
+    ),
+  );
   runApp(const QuranAudioApp());
 }
 
@@ -21,24 +29,47 @@ class QuranAudioApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
         useMaterial3: true,
+        fontFamily: 'Roboto',
         colorScheme: ColorScheme.fromSeed(
-          seedColor: const Color(0xFF1B6B53),
-          primary: const Color(0xFF1B6B53),
+          seedColor: const Color(0xFF0F4C3A),
+          primary: const Color(0xFF0F4C3A),
+          onPrimary: Colors.white,
           secondary: const Color(0xFFD4AF37),
+          onSecondary: const Color(0xFF07261D),
           surface: Colors.white,
+          surfaceContainerLowest: const Color(0xFFF8FAF9),
+          surfaceContainerLow: const Color(0xFFF2F6F4),
         ),
-        scaffoldBackgroundColor: const Color(0xFFF7F9F8),
+        scaffoldBackgroundColor: const Color(0xFFF5F8F6),
         appBarTheme: const AppBarTheme(
-          backgroundColor: Color(0xFF0D3B2E),
+          backgroundColor: Color(0xFF082D23),
           foregroundColor: Colors.white,
           elevation: 0,
           centerTitle: false,
           systemOverlayStyle: SystemUiOverlayStyle.light,
+          titleTextStyle: TextStyle(
+            color: Colors.white,
+            fontSize: 20,
+            fontWeight: FontWeight.bold,
+            letterSpacing: 0.3,
+          ),
+          iconTheme: IconThemeData(color: Color(0xFFD4AF37)),
         ),
         cardTheme: CardThemeData(
           color: Colors.white,
-          elevation: 1,
+          elevation: 1.5,
+          shadowColor: const Color(0xFF0F4C3A).withValues(alpha: 0.08),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        ),
+        snackBarTheme: SnackBarThemeData(
+          backgroundColor: const Color(0xFF082D23),
+          contentTextStyle: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+          behavior: SnackBarBehavior.floating,
+        ),
+        chipTheme: ChipThemeData(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          side: BorderSide.none,
         ),
       ),
       home: const Directionality(

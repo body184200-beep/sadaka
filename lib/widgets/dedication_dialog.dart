@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'full_screen_image_viewer.dart';
 
 class DedicationDialog extends StatelessWidget {
@@ -24,9 +25,13 @@ class DedicationDialog extends StatelessWidget {
     ];
 
     return Container(
-      height: MediaQuery.of(context).size.height * 0.88,
+      height: MediaQuery.of(context).size.height * 0.90,
       decoration: const BoxDecoration(
-        color: Color(0xFF0D3B2E),
+        gradient: LinearGradient(
+          colors: [Color(0xFF07241C), Color(0xFF0F4335), Color(0xFF08221B)],
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+        ),
         borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
       ),
       child: Column(
@@ -37,7 +42,7 @@ class DedicationDialog extends StatelessWidget {
             width: 44,
             height: 4.5,
             decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.3),
+              color: const Color(0xFFD4AF37).withValues(alpha: 0.6),
               borderRadius: BorderRadius.circular(3),
             ),
           ),
@@ -82,8 +87,15 @@ class DedicationDialog extends StatelessWidget {
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
                     ),
-                    borderRadius: BorderRadius.circular(16),
-                    border: Border.all(color: const Color(0xFFD4AF37), width: 1),
+                    borderRadius: BorderRadius.circular(18),
+                    border: Border.all(color: const Color(0xFFD4AF37), width: 1.4),
+                    boxShadow: [
+                      BoxShadow(
+                        color: const Color(0xFFD4AF37).withValues(alpha: 0.2),
+                        blurRadius: 10,
+                        offset: const Offset(0, 3),
+                      ),
+                    ],
                   ),
                   child: const Column(
                     children: [
@@ -92,7 +104,7 @@ class DedicationDialog extends StatelessWidget {
                         textAlign: TextAlign.center,
                         style: TextStyle(
                           color: Colors.white,
-                          fontSize: 15.5,
+                          fontSize: 16,
                           fontWeight: FontWeight.bold,
                           height: 1.6,
                         ),
@@ -102,19 +114,19 @@ class DedicationDialog extends StatelessWidget {
                         '[ سورة النحل: ٣٢ ]',
                         style: TextStyle(
                           color: Color(0xFFD4AF37),
-                          fontSize: 12,
+                          fontSize: 12.5,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
-                      SizedBox(height: 8),
+                      SizedBox(height: 10),
                       Text(
-                        'اللهم اجعل ثواب تلاوة كل حرف من هذا المصحف الشريف نوراً ورحمة وضياءً لمحمد أسامة في قبره، وشفيعاً له يوم الحساب.',
+                        'اللهم اجعل ثواب تلاوة كل حرف من هذا المصحف الشريف نوراً ورحمة وضياءً لمحمد أسامة في قبره، وشفيعاً له يوم الحساب، وعوّضه عن شبابه بالجنة.',
                         textAlign: TextAlign.center,
                         style: TextStyle(
                           color: Colors.white,
-                          fontSize: 12.5,
+                          fontSize: 13,
                           fontWeight: FontWeight.w500,
-                          height: 1.4,
+                          height: 1.5,
                         ),
                       ),
                     ],
@@ -123,13 +135,29 @@ class DedicationDialog extends StatelessWidget {
 
                 const SizedBox(height: 18),
 
-                const Text(
-                  'ألبوم الذكرى العطرة والإهداء',
-                  style: TextStyle(
-                    color: Color(0xFFD4AF37),
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                  ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text(
+                      'ألبوم الذكرى العطرة والإهداء',
+                      style: TextStyle(
+                        color: Color(0xFFD4AF37),
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: const Text(
+                        'اسحب للتنقل ◄',
+                        style: TextStyle(color: Colors.white70, fontSize: 11),
+                      ),
+                    ),
+                  ],
                 ),
                 const SizedBox(height: 10),
 
@@ -222,7 +250,7 @@ class DedicationDialog extends StatelessWidget {
                   ),
                 ),
 
-                const SizedBox(height: 20),
+                const SizedBox(height: 22),
 
                 // Du'as for the deceased Mohamed Osama
                 const Text(
@@ -236,26 +264,31 @@ class DedicationDialog extends StatelessWidget {
                 const SizedBox(height: 10),
 
                 _duaCard(
+                  context,
                   'اللهم اغفر لمحمد أسامة وارحمه، وعافه واعف عنه، وأكرم نزله، ووسّع مدخله، واغسله بالماء والثلج والبرد، ونقّه من الخطايا كما يُنقّى الثوب الأبيض من الدنس.',
                   'دعاء مأثور للمتوفى',
                 ),
                 const SizedBox(height: 8),
                 _duaCard(
+                  context,
                   'اللهم اجعل قبره روضة من رياض الجنة، ولا تجعله حفرة من حفر النار، وافتح له باباً من الجنة تهبّ عليه نسائمها ورحماتها.',
                   'دعاء للمتوفى',
                 ),
                 const SizedBox(height: 8),
                 _duaCard(
+                  context,
                   'اللهم أبدله داراً خيراً من داره، وأهلاً خيراً من أهله، وأدخله الجنة بغير حساب ولا سابقة عذاب، واجمعه مع النبيين والصديقين والشهداء.',
                   'دعاء مأثور',
                 ),
                 const SizedBox(height: 8),
                 _duaCard(
+                  context,
                   'اللهم ارحم شبابه، وعوّضه عن شبابه بالجنة ونعيمها، وأنزل على قلوب والدته وأهله ومحبيه الصبر والسلوان والسكينة واجمعهم به في الفردوس الأعلى.',
                   'دعاء لمحمد ولوالدته وأهله',
                 ),
                 const SizedBox(height: 8),
                 _duaCard(
+                  context,
                   'اللهم اجعل كل آية تُتلى في هذا التطبيق في ميزان حسنات محمد أسامة صدقةً جاريةً لا تنقطع إلى يوم القيامة.',
                   'ثواب الصدقة الجارية',
                 ),
@@ -267,13 +300,13 @@ class DedicationDialog extends StatelessWidget {
     );
   }
 
-  Widget _duaCard(String text, String source) {
+  Widget _duaCard(BuildContext context, String text, String source) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.07),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
+        color: Colors.white.withValues(alpha: 0.08),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.12)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -287,14 +320,60 @@ class DedicationDialog extends StatelessWidget {
               fontWeight: FontWeight.w500,
             ),
           ),
-          const SizedBox(height: 4),
-          Text(
-            source,
-            style: const TextStyle(
-              color: Color(0xFFD4AF37),
-              fontSize: 11,
-              fontWeight: FontWeight.bold,
-            ),
+          const SizedBox(height: 8),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                source,
+                style: const TextStyle(
+                  color: Color(0xFFD4AF37),
+                  fontSize: 11,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              InkWell(
+                onTap: () {
+                  Clipboard.setData(ClipboardData(text: text));
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Row(
+                        children: [
+                          Icon(Icons.check_circle_rounded, color: Color(0xFFD4AF37), size: 18),
+                          SizedBox(width: 8),
+                          Text('تم نسخ الدعاء بنجاح - جزاكم الله خيراً'),
+                        ],
+                      ),
+                      duration: Duration(seconds: 2),
+                    ),
+                  );
+                },
+                borderRadius: BorderRadius.circular(8),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFD4AF37).withValues(alpha: 0.2),
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(color: const Color(0xFFD4AF37), width: 0.8),
+                  ),
+                  child: const Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(Icons.copy_rounded, color: Color(0xFFD4AF37), size: 13),
+                      SizedBox(width: 4),
+                      Text(
+                        'نسخ الدعاء',
+                        style: TextStyle(
+                          color: Color(0xFFD4AF37),
+                          fontSize: 11,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
           ),
         ],
       ),

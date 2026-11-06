@@ -4,60 +4,11 @@ import '../models/surah.dart';
 class QuranData {
   static const List<Reciter> reciters = [
     Reciter(
-      id: 'afs',
-      name: 'مشاري راشد العفاسي',
-      subName: 'رواية حفص عن عاصم - مرتل',
-      serverUrl: 'https://server8.mp3quran.net/afs/',
-      style: 'حفص عن عاصم',
-    ),
-    Reciter(
-      id: 'basit',
-      name: 'عبد الباسط عبد الصمد',
-      subName: 'المصحف المرتل',
-      serverUrl: 'https://server7.mp3quran.net/basit/',
-      style: 'مرتل',
-    ),
-    Reciter(
-      id: 'husr',
-      name: 'محمود خليل الحصري',
-      subName: 'المصحف المرتل برواية حفص',
-      serverUrl: 'https://server13.mp3quran.net/husr/',
-      style: 'مرتل',
-    ),
-    Reciter(
       id: 'minsh',
       name: 'محمد صديق المنشاوي',
-      subName: 'المصحف المرتل',
+      subName: 'المصحف المرتل برواية حفص عن عاصم',
       serverUrl: 'https://server10.mp3quran.net/minsh/',
       style: 'مرتل',
-    ),
-    Reciter(
-      id: 'maher',
-      name: 'ماهر المعيقلي',
-      subName: 'إمام الحرم المكي الشريف',
-      serverUrl: 'https://server12.mp3quran.net/maher/',
-      style: 'حفص عن عاصم',
-    ),
-    Reciter(
-      id: 's_gmd',
-      name: 'سعد الغامدي',
-      subName: 'المصحف المرتل',
-      serverUrl: 'https://server7.mp3quran.net/s_gmd/',
-      style: 'مرتل',
-    ),
-    Reciter(
-      id: 'ajm',
-      name: 'أحمد بن علي العجمي',
-      subName: 'المصحف المرتل',
-      serverUrl: 'https://server10.mp3quran.net/ajm/',
-      style: 'مرتل',
-    ),
-    Reciter(
-      id: 'yasser',
-      name: 'ياسر الدوسري',
-      subName: 'إمام الحرم المكي الشريف',
-      serverUrl: 'https://server11.mp3quran.net/yasser/',
-      style: 'حفص عن عاصم',
     ),
   ];
 
@@ -183,5 +134,12 @@ class QuranData {
       (s) => s.number == number,
       orElse: () => surahs.first,
     );
+  }
+
+  static Surah? getSurahByNumber(int number) {
+    for (final s in surahs) {
+      if (s.number == number) return s;
+    }
+    return null;
   }
 }

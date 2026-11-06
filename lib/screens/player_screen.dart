@@ -125,6 +125,121 @@ class _PlayerScreenState extends State<PlayerScreen> with SingleTickerProviderSt
     );
   }
 
+  void _showVolumeBoosterSheet(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (ctx) {
+        return StatefulBuilder(
+          builder: (context, setSheetState) {
+            final isEnabled = _playerService.isLoudnessBoostEnabled;
+            final gain = _playerService.loudnessGain;
+
+            return Padding(
+              padding: const EdgeInsets.fromLTRB(20, 16, 20, 28),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                    width: 40,
+                    height: 4,
+                    decoration: BoxDecoration(
+                      color: Colors.grey.shade300,
+                      borderRadius: BorderRadius.circular(2),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  const Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(Icons.bolt_rounded, color: Color(0xFFD4AF37), size: 24),
+                      SizedBox(width: 8),
+                      Text(
+                        'مضخم الصوت الرقمي الفائق',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: Color(0xFF1B6B53),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    isEnabled
+                        ? 'الصوت مضخم لأقصى درجة ممكنة (+${gain.toInt()} dB) لتوفير أعلى مستوى صوت نقي'
+                        : 'مضخم الصوت معطل حالياً',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                      color: isEnabled ? const Color(0xFF2E7D32) : Colors.grey,
+                    ),
+                  ),
+                  const SizedBox(height: 18),
+                  Row(
+                    children: [
+                      const Icon(Icons.volume_down_rounded, color: Color(0xFF1B6B53)),
+                      Expanded(
+                        child: Slider(
+                          min: 0.0,
+                          max: 20.0,
+                          divisions: 20,
+                          label: '+${gain.toInt()} dB',
+                          value: isEnabled ? gain : 0.0,
+                          activeColor: const Color(0xFFD4AF37),
+                          inactiveColor: Colors.grey.shade300,
+                          onChanged: (val) {
+                            setSheetState(() {});
+                            _playerService.setLoudnessGain(val);
+                          },
+                        ),
+                      ),
+                      const Icon(Icons.volume_up_rounded, color: Color(0xFFD4AF37)),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      ElevatedButton.icon(
+                        icon: const Icon(Icons.bolt_rounded, color: Colors.white),
+                        label: const Text('أقصى تضخيم (+20 dB)', style: TextStyle(fontWeight: FontWeight.bold)),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFF1B6B53),
+                          foregroundColor: Colors.white,
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        ),
+                        onPressed: () {
+                          setSheetState(() {});
+                          _playerService.setLoudnessGain(20.0);
+                        },
+                      ),
+                      OutlinedButton.icon(
+                        icon: Icon(isEnabled ? Icons.power_settings_new_rounded : Icons.play_arrow_rounded),
+                        label: Text(isEnabled ? 'إيقاف التضخيم' : 'تفعيل التضخيم'),
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: isEnabled ? Colors.red.shade700 : const Color(0xFF1B6B53),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        ),
+                        onPressed: () {
+                          setSheetState(() {});
+                          _playerService.toggleLoudnessBoost();
+                        },
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return AnimatedBuilder(
@@ -158,15 +273,6 @@ class _PlayerScreenState extends State<PlayerScreen> with SingleTickerProviderSt
         }
 
         final maxDurationMs = duration.inMilliseconds.toDouble();
-        final currentPositionMs = position.inMilliseconds.toDouble().clamp(
-              0.0,
-              maxDurationMs > 0 ? maxDurationMs : 1.0,
-            );
-
-        final displayPosition = _dragValue != null
-            ? Duration(milliseconds: _dragValue!.toInt())
-            : position;
-
         final currentArtwork = _artworks[_artworkIndex];
 
         return Scaffold(
@@ -215,16 +321,22 @@ class _PlayerScreenState extends State<PlayerScreen> with SingleTickerProviderSt
                                 );
                               },
                               child: Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
                                 decoration: BoxDecoration(
-                                  color: Colors.white.withValues(alpha: 0.12),
+                                  color: const Color(0xFF0F4C3A),
                                   borderRadius: BorderRadius.circular(20),
-                                  border: Border.all(color: const Color(0xFFD4AF37), width: 0.8),
+                                  border: Border.all(color: const Color(0xFFD4AF37), width: 1.2),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: const Color(0xFFD4AF37).withValues(alpha: 0.2),
+                                      blurRadius: 6,
+                                    ),
+                                  ],
                                 ),
                                 child: Row(
                                   mainAxisSize: MainAxisSize.min,
                                   children: [
-                                    const Icon(Icons.mic_none_rounded, color: Color(0xFFD4AF37), size: 16),
+                                    const Icon(Icons.record_voice_over_rounded, color: Color(0xFFD4AF37), size: 16),
                                     const SizedBox(width: 6),
                                     Text(
                                       reciter.name,
@@ -235,7 +347,7 @@ class _PlayerScreenState extends State<PlayerScreen> with SingleTickerProviderSt
                                       ),
                                     ),
                                     const SizedBox(width: 4),
-                                    const Icon(Icons.arrow_drop_down, color: Colors.white, size: 18),
+                                    const Icon(Icons.verified_rounded, color: Color(0xFFD4AF37), size: 14),
                                   ],
                                 ),
                               ),
@@ -273,160 +385,229 @@ class _PlayerScreenState extends State<PlayerScreen> with SingleTickerProviderSt
                         ),
                       ),
 
-                      // Center Luxury Artwork Frame
+                      // Center Luxury Artwork Frame (Responsive to prevent any layout overflow)
                       Expanded(
-                        child: Center(
-                          child: Column(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              ScaleTransition(
-                                scale: isPlaying ? _pulseAnimation : const AlwaysStoppedAnimation(1.0),
-                                child: GestureDetector(
-                                  onTap: () {
-                                    setState(() {
-                                      _artworkIndex = (_artworkIndex + 1) % _artworks.length;
-                                    });
-                                  },
-                                  child: Container(
-                                    width: 230,
-                                    height: 280,
-                                    decoration: BoxDecoration(
-                                      color: const Color(0xFF0F3E30),
-                                      borderRadius: BorderRadius.circular(24),
-                                      border: Border.all(color: const Color(0xFFD4AF37), width: 2.8),
-                                      boxShadow: [
-                                        BoxShadow(
-                                          color: const Color(0xFFD4AF37).withValues(alpha: isPlaying ? 0.35 : 0.15),
-                                          blurRadius: 30,
-                                          spreadRadius: 4,
-                                        ),
-                                        BoxShadow(
-                                          color: Colors.black.withValues(alpha: 0.5),
-                                          blurRadius: 15,
-                                          offset: const Offset(0, 8),
-                                        ),
-                                      ],
-                                    ),
-                                    child: ClipRRect(
-                                      borderRadius: BorderRadius.circular(21),
-                                      child: Stack(
-                                        fit: StackFit.expand,
-                                        children: [
-                                          Image.asset(
-                                            currentArtwork['path']!,
-                                            fit: BoxFit.cover,
-                                            alignment: Alignment.topCenter,
-                                            errorBuilder: (ctx, error, _) => const Center(
-                                              child: Icon(Icons.menu_book_rounded, size: 70, color: Color(0xFFD4AF37)),
+                        child: LayoutBuilder(
+                          builder: (context, constraints) {
+                            final availableHeight = constraints.maxHeight;
+                            // Dynamically adapt artwork size based on available vertical space
+                            final cardHeight = (availableHeight - 55).clamp(140.0, 240.0);
+                            final cardWidth = (cardHeight * 0.82).clamp(120.0, 210.0);
+                            final isCompact = availableHeight < 250;
+
+                            return Center(
+                              child: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  ScaleTransition(
+                                    scale: isPlaying ? _pulseAnimation : const AlwaysStoppedAnimation(1.0),
+                                    child: GestureDetector(
+                                      onTap: () {
+                                        setState(() {
+                                          _artworkIndex = (_artworkIndex + 1) % _artworks.length;
+                                        });
+                                      },
+                                      child: Container(
+                                        width: cardWidth,
+                                        height: cardHeight,
+                                        decoration: BoxDecoration(
+                                          color: const Color(0xFF0F3E30),
+                                          borderRadius: BorderRadius.circular(20),
+                                          border: Border.all(color: const Color(0xFFD4AF37), width: 2.2),
+                                          boxShadow: [
+                                            BoxShadow(
+                                              color: const Color(0xFFD4AF37).withValues(alpha: isPlaying ? 0.35 : 0.15),
+                                              blurRadius: 24,
+                                              spreadRadius: 3,
                                             ),
-                                          ),
-                                          // Bottom subtle gradient overlay for title
-                                          Positioned(
-                                            left: 0,
-                                            right: 0,
-                                            bottom: 0,
-                                            child: Container(
-                                              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-                                              decoration: BoxDecoration(
-                                                gradient: LinearGradient(
-                                                  colors: [
-                                                    Colors.transparent,
-                                                    Colors.black.withValues(alpha: 0.85),
-                                                  ],
-                                                  begin: Alignment.topCenter,
-                                                  end: Alignment.bottomCenter,
+                                            BoxShadow(
+                                              color: Colors.black.withValues(alpha: 0.5),
+                                              blurRadius: 12,
+                                              offset: const Offset(0, 6),
+                                            ),
+                                          ],
+                                        ),
+                                        child: ClipRRect(
+                                          borderRadius: BorderRadius.circular(18),
+                                          child: Stack(
+                                            fit: StackFit.expand,
+                                            children: [
+                                              Image.asset(
+                                                currentArtwork['path']!,
+                                                fit: BoxFit.cover,
+                                                alignment: Alignment.topCenter,
+                                                errorBuilder: (ctx, error, _) => const Center(
+                                                  child: Icon(Icons.menu_book_rounded, size: 60, color: Color(0xFFD4AF37)),
                                                 ),
                                               ),
-                                              child: Row(
-                                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                                children: [
-                                                  Expanded(
-                                                    child: Text(
-                                                      currentArtwork['title']!,
-                                                      style: const TextStyle(
-                                                        color: Colors.white,
-                                                        fontSize: 12,
-                                                        fontWeight: FontWeight.bold,
-                                                      ),
-                                                      overflow: TextOverflow.ellipsis,
+                                              // Bottom subtle gradient overlay for title
+                                              Positioned(
+                                                left: 0,
+                                                right: 0,
+                                                bottom: 0,
+                                                child: Container(
+                                                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+                                                  decoration: BoxDecoration(
+                                                    gradient: LinearGradient(
+                                                      colors: [
+                                                        Colors.transparent,
+                                                        Colors.black.withValues(alpha: 0.85),
+                                                      ],
+                                                      begin: Alignment.topCenter,
+                                                      end: Alignment.bottomCenter,
                                                     ),
                                                   ),
-                                                  IconButton(
-                                                    icon: const Icon(Icons.fullscreen_rounded, color: Color(0xFFD4AF37), size: 22),
-                                                    padding: EdgeInsets.zero,
-                                                    constraints: const BoxConstraints(),
-                                                    tooltip: 'تكبير الصورة',
-                                                    onPressed: () {
-                                                      FullScreenImageViewer.open(
-                                                        context,
-                                                        currentArtwork['path']!,
-                                                        title: currentArtwork['title']!,
-                                                      );
-                                                    },
+                                                  child: Row(
+                                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                                    children: [
+                                                      Expanded(
+                                                        child: Text(
+                                                          currentArtwork['title']!,
+                                                          style: const TextStyle(
+                                                            color: Colors.white,
+                                                            fontSize: 11,
+                                                            fontWeight: FontWeight.bold,
+                                                          ),
+                                                          overflow: TextOverflow.ellipsis,
+                                                        ),
+                                                      ),
+                                                      IconButton(
+                                                        icon: const Icon(Icons.fullscreen_rounded, color: Color(0xFFD4AF37), size: 20),
+                                                        padding: EdgeInsets.zero,
+                                                        constraints: const BoxConstraints(),
+                                                        tooltip: 'تكبير الصورة',
+                                                        onPressed: () {
+                                                          FullScreenImageViewer.open(
+                                                            context,
+                                                            currentArtwork['path']!,
+                                                            title: currentArtwork['title']!,
+                                                          );
+                                                        },
+                                                      ),
+                                                    ],
                                                   ),
-                                                ],
+                                                ),
                                               ),
-                                            ),
+                                            ],
                                           ),
-                                        ],
+                                        ),
                                       ),
                                     ),
                                   ),
-                                ),
-                              ),
-                              const SizedBox(height: 12),
-                              // Tip to cycle photos
-                              TextButton.icon(
-                                onPressed: () {
-                                  setState(() {
-                                    _artworkIndex = (_artworkIndex + 1) % _artworks.length;
-                                  });
-                                },
-                                icon: const Icon(Icons.touch_app_rounded, color: Color(0xFFD4AF37), size: 16),
-                                label: const Text(
-                                  'المس لتغيير الصورة (صدقة جارية على روح محمد أسامة)',
-                                  style: TextStyle(
-                                    color: Color(0xFFD4AF37),
-                                    fontSize: 11.5,
-                                    fontWeight: FontWeight.w600,
+                                  const SizedBox(height: 6),
+                                  // Visual photo dots indicator
+                                  Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: List.generate(_artworks.length, (idx) {
+                                      final isSel = idx == _artworkIndex;
+                                      return GestureDetector(
+                                        onTap: () {
+                                          setState(() {
+                                            _artworkIndex = idx;
+                                          });
+                                        },
+                                        child: AnimatedContainer(
+                                          duration: const Duration(milliseconds: 250),
+                                          margin: const EdgeInsets.symmetric(horizontal: 3),
+                                          width: isSel ? 18 : 6,
+                                          height: 5,
+                                          decoration: BoxDecoration(
+                                            color: isSel ? const Color(0xFFD4AF37) : Colors.white24,
+                                            borderRadius: BorderRadius.circular(3),
+                                          ),
+                                        ),
+                                      );
+                                    }),
                                   ),
-                                ),
-                                style: TextButton.styleFrom(
-                                  foregroundColor: const Color(0xFFD4AF37),
-                                  backgroundColor: Colors.white.withValues(alpha: 0.08),
-                                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 5),
-                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-                                ),
+                                  if (!isCompact) ...[
+                                    const SizedBox(height: 6),
+                                    // Tip to cycle photos
+                                    TextButton.icon(
+                                      onPressed: () {
+                                        setState(() {
+                                          _artworkIndex = (_artworkIndex + 1) % _artworks.length;
+                                        });
+                                      },
+                                      icon: const Icon(Icons.touch_app_rounded, color: Color(0xFFD4AF37), size: 14),
+                                      label: const Text(
+                                        'المس لتغيير الصورة (صدقة جارية)',
+                                        style: TextStyle(
+                                          color: Color(0xFFD4AF37),
+                                          fontSize: 11,
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                      ),
+                                      style: TextButton.styleFrom(
+                                        foregroundColor: const Color(0xFFD4AF37),
+                                        backgroundColor: Colors.white.withValues(alpha: 0.08),
+                                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 3),
+                                        minimumSize: Size.zero,
+                                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                                      ),
+                                    ),
+                                  ],
+                                ],
                               ),
-                            ],
-                          ),
+                            );
+                          },
                         ),
                       ),
-                  const SizedBox(height: 10),
+                  const SizedBox(height: 8),
 
                   // Surah Info
                   Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 24.0),
+                    padding: const EdgeInsets.symmetric(horizontal: 20.0),
                     child: Column(
                       children: [
                         Text(
                           'سورة ${surah.name}',
                           style: const TextStyle(
                             color: Colors.white,
-                            fontSize: 30,
+                            fontSize: 29,
                             fontWeight: FontWeight.bold,
                             letterSpacing: 0.5,
                           ),
                         ),
-                        const SizedBox(height: 6),
+                        const SizedBox(height: 4),
                         Text(
-                          '${surah.englishName} • ${surah.revelationType} • ${surah.versesCount} آيات',
+                          'السورة ${surah.number} • ${surah.revelationType} • ${surah.versesCount} آيات • ${surah.englishName}',
                           style: TextStyle(
-                            color: Colors.white.withValues(alpha: 0.75),
-                            fontSize: 14,
+                            color: Colors.white.withValues(alpha: 0.8),
+                            fontSize: 13,
+                            fontWeight: FontWeight.w500,
                           ),
                         ),
-                        const SizedBox(height: 8),
+                        const SizedBox(height: 6),
+                        // Memorial Prayer Bar for Mohamed Osama
+                        InkWell(
+                          onTap: () => DedicationDialog.show(context),
+                          borderRadius: BorderRadius.circular(16),
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFF0D3B2E),
+                              borderRadius: BorderRadius.circular(16),
+                              border: Border.all(color: const Color(0xFFD4AF37).withValues(alpha: 0.5), width: 0.8),
+                            ),
+                            child: const Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(Icons.favorite_rounded, color: Color(0xFFD4AF37), size: 14),
+                                SizedBox(width: 6),
+                                Text(
+                                  'اللهم ارحم شبابه واغفر له واجعل الجنة مثواه • صدقة جارية',
+                                  style: TextStyle(
+                                    color: Color(0xFFE5C158),
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 6),
                         // Offline Badge
                         if (isOffline)
                           Container(
@@ -484,6 +665,45 @@ class _PlayerScreenState extends State<PlayerScreen> with SingleTickerProviderSt
                               );
                             },
                           ),
+                        const SizedBox(height: 8),
+                        // Volume Booster Badge
+                        InkWell(
+                          onTap: () => _showVolumeBoosterSheet(context),
+                          borderRadius: BorderRadius.circular(20),
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 5),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFD4AF37).withValues(alpha: 0.18),
+                              borderRadius: BorderRadius.circular(20),
+                              border: Border.all(color: const Color(0xFFD4AF37), width: 1.2),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: const Color(0xFFD4AF37).withValues(alpha: 0.2),
+                                  blurRadius: 6,
+                                ),
+                              ],
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                const Icon(Icons.volume_up_rounded, color: Color(0xFFD4AF37), size: 16),
+                                const SizedBox(width: 6),
+                                Text(
+                                  _playerService.isLoudnessBoostEnabled
+                                      ? 'مضخم الصوت: أقصى درجة (+${_playerService.loudnessGain.toInt()} dB)'
+                                      : 'مضخم الصوت: معطل',
+                                  style: const TextStyle(
+                                    color: Color(0xFFD4AF37),
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                const SizedBox(width: 4),
+                                const Icon(Icons.bolt_rounded, color: Color(0xFFD4AF37), size: 16),
+                              ],
+                            ),
+                          ),
+                        ),
                       ],
                     ),
                   ),
@@ -491,78 +711,91 @@ class _PlayerScreenState extends State<PlayerScreen> with SingleTickerProviderSt
                   const SizedBox(height: 16),
 
                   // Seek Bar with smooth drag
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 20),
-                    child: Column(
-                      children: [
-                        SliderTheme(
-                          data: SliderTheme.of(context).copyWith(
-                            activeTrackColor: const Color(0xFFD4AF37),
-                            inactiveTrackColor: Colors.white.withValues(alpha: 0.2),
-                            thumbColor: const Color(0xFFD4AF37),
-                            trackHeight: 4.0,
-                            thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 7.0),
-                            overlayShape: const RoundSliderOverlayShape(overlayRadius: 14),
-                          ),
-                          child: Slider(
-                            min: 0.0,
-                            max: maxDurationMs > 0 ? maxDurationMs : 1.0,
-                            value: (_dragValue ?? currentPositionMs).clamp(
-                              0.0,
-                              maxDurationMs > 0 ? maxDurationMs : 1.0,
+                  ValueListenableBuilder<Duration>(
+                    valueListenable: _playerService.positionNotifier,
+                    builder: (context, position, _) {
+                      final currentPositionMs = position.inMilliseconds.toDouble().clamp(
+                            0.0,
+                            maxDurationMs > 0 ? maxDurationMs : 1.0,
+                          );
+                      final displayPosition = _dragValue != null
+                          ? Duration(milliseconds: _dragValue!.toInt())
+                          : position;
+
+                      return Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 20),
+                        child: Column(
+                          children: [
+                            SliderTheme(
+                              data: SliderTheme.of(context).copyWith(
+                                activeTrackColor: const Color(0xFFD4AF37),
+                                inactiveTrackColor: Colors.white.withValues(alpha: 0.2),
+                                thumbColor: const Color(0xFFD4AF37),
+                                trackHeight: 4.0,
+                                thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 7.0),
+                                overlayShape: const RoundSliderOverlayShape(overlayRadius: 14),
+                              ),
+                              child: Slider(
+                                min: 0.0,
+                                max: maxDurationMs > 0 ? maxDurationMs : 1.0,
+                                value: (_dragValue ?? currentPositionMs).clamp(
+                                  0.0,
+                                  maxDurationMs > 0 ? maxDurationMs : 1.0,
+                                ),
+                                onChanged: maxDurationMs > 0
+                                    ? (val) {
+                                        setState(() {
+                                          _dragValue = val;
+                                        });
+                                      }
+                                    : null,
+                                onChangeEnd: maxDurationMs > 0
+                                    ? (val) {
+                                        _playerService.seek(Duration(milliseconds: val.toInt()));
+                                        setState(() {
+                                          _dragValue = null;
+                                        });
+                                      }
+                                    : null,
+                              ),
                             ),
-                            onChanged: maxDurationMs > 0
-                                ? (val) {
-                                    setState(() {
-                                      _dragValue = val;
-                                    });
-                                  }
-                                : null,
-                            onChangeEnd: maxDurationMs > 0
-                                ? (val) {
-                                    _playerService.seek(Duration(milliseconds: val.toInt()));
-                                    setState(() {
-                                      _dragValue = null;
-                                    });
-                                  }
-                                : null,
-                          ),
-                        ),
-                        Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 10),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Text(
-                                _formatDuration(displayPosition),
-                                style: const TextStyle(
-                                  color: Color(0xFFD4AF37),
-                                  fontSize: 13,
-                                  fontWeight: FontWeight.bold,
-                                ),
+                            Padding(
+                              padding: const EdgeInsets.symmetric(horizontal: 10),
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Text(
+                                    _formatDuration(displayPosition),
+                                    style: const TextStyle(
+                                      color: Color(0xFFD4AF37),
+                                      fontSize: 13,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                  Text(
+                                    maxDurationMs > 0
+                                        ? _formatDuration(duration)
+                                        : 'جاري التحميل...',
+                                    style: TextStyle(
+                                      color: Colors.white.withValues(alpha: 0.7),
+                                      fontSize: 13,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                                ],
                               ),
-                              Text(
-                                maxDurationMs > 0
-                                    ? _formatDuration(duration)
-                                    : 'جاري التحميل...',
-                                style: TextStyle(
-                                  color: Colors.white.withValues(alpha: 0.7),
-                                  fontSize: 13,
-                                  fontWeight: FontWeight.w500,
-                                ),
-                              ),
-                            ],
-                          ),
+                            ),
+                          ],
                         ),
-                      ],
-                    ),
+                      );
+                    },
                   ),
 
                   const SizedBox(height: 10),
 
                   // Playback Controls Row
                   Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                    padding: const EdgeInsets.symmetric(horizontal: 14.0),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                       children: [
@@ -577,38 +810,51 @@ class _PlayerScreenState extends State<PlayerScreen> with SingleTickerProviderSt
                             color: repeatMode == QuranRepeatMode.none
                                 ? Colors.white.withValues(alpha: 0.4)
                                 : const Color(0xFFD4AF37),
-                            size: 26,
+                            size: 24,
                           ),
                           tooltip: 'وضع التكرار',
                           onPressed: () => _playerService.toggleRepeatMode(),
                         ),
                         // Previous Surah
-                        IconButton(
-                          icon: const Icon(Icons.skip_previous_rounded, color: Colors.white, size: 36),
-                          tooltip: 'السورة السابقة',
-                          onPressed: () => _playerService.playPrevious(),
+                        Container(
+                          decoration: BoxDecoration(
+                            color: Colors.white.withValues(alpha: 0.08),
+                            shape: BoxShape.circle,
+                          ),
+                          child: IconButton(
+                            icon: const Icon(Icons.skip_previous_rounded, color: Colors.white, size: 28),
+                            tooltip: 'السورة السابقة',
+                            onPressed: () => _playerService.playPrevious(),
+                          ),
                         ),
                         // 10s Rewind (-10s)
-                        IconButton(
-                          icon: const Icon(Icons.replay_10_rounded, color: Colors.white, size: 32),
-                          tooltip: 'تأخير 10 ثوانٍ',
-                          onPressed: () => _playerService.seekBackward(10),
+                        Container(
+                          decoration: BoxDecoration(
+                            color: Colors.white.withValues(alpha: 0.08),
+                            shape: BoxShape.circle,
+                          ),
+                          child: IconButton(
+                            icon: const Icon(Icons.replay_10_rounded, color: Colors.white, size: 24),
+                            tooltip: 'تأخير 10 ثوانٍ',
+                            onPressed: () => _playerService.seekBackward(10),
+                          ),
                         ),
                         // Main Play / Pause Button
                         Container(
-                          width: 68,
-                          height: 68,
+                          width: 72,
+                          height: 72,
                           decoration: BoxDecoration(
                             gradient: const LinearGradient(
-                              colors: [Color(0xFFE5C158), Color(0xFFB8860B)],
+                              colors: [Color(0xFFF3D274), Color(0xFFC59B27), Color(0xFF9E7B18)],
                               begin: Alignment.topLeft,
                               end: Alignment.bottomRight,
                             ),
                             shape: BoxShape.circle,
+                            border: Border.all(color: Colors.white.withValues(alpha: 0.4), width: 2),
                             boxShadow: [
                               BoxShadow(
-                                color: const Color(0xFFD4AF37).withValues(alpha: 0.45),
-                                blurRadius: 16,
+                                color: const Color(0xFFD4AF37).withValues(alpha: 0.5),
+                                blurRadius: 20,
                                 offset: const Offset(0, 4),
                               ),
                             ],
@@ -616,8 +862,8 @@ class _PlayerScreenState extends State<PlayerScreen> with SingleTickerProviderSt
                           child: Center(
                             child: _playerService.isBuffering
                                 ? const SizedBox(
-                                    width: 30,
-                                    height: 30,
+                                    width: 32,
+                                    height: 32,
                                     child: CircularProgressIndicator(
                                       color: Color(0xFF0D3B2E),
                                       strokeWidth: 3,
@@ -626,24 +872,36 @@ class _PlayerScreenState extends State<PlayerScreen> with SingleTickerProviderSt
                                 : IconButton(
                                     icon: Icon(
                                       isPlaying ? Icons.pause_rounded : Icons.play_arrow_rounded,
-                                      color: const Color(0xFF0D3B2E),
-                                      size: 40,
+                                      color: const Color(0xFF07261D),
+                                      size: 42,
                                     ),
                                     onPressed: () => _playerService.togglePlayPause(),
                                   ),
                           ),
                         ),
                         // 10s Forward (+10s)
-                        IconButton(
-                          icon: const Icon(Icons.forward_10_rounded, color: Colors.white, size: 32),
-                          tooltip: 'تقديم 10 ثوانٍ',
-                          onPressed: () => _playerService.seekForward(10),
+                        Container(
+                          decoration: BoxDecoration(
+                            color: Colors.white.withValues(alpha: 0.08),
+                            shape: BoxShape.circle,
+                          ),
+                          child: IconButton(
+                            icon: const Icon(Icons.forward_10_rounded, color: Colors.white, size: 24),
+                            tooltip: 'تقديم 10 ثوانٍ',
+                            onPressed: () => _playerService.seekForward(10),
+                          ),
                         ),
                         // Next Surah
-                        IconButton(
-                          icon: const Icon(Icons.skip_next_rounded, color: Colors.white, size: 36),
-                          tooltip: 'السورة التالية',
-                          onPressed: () => _playerService.playNext(),
+                        Container(
+                          decoration: BoxDecoration(
+                            color: Colors.white.withValues(alpha: 0.08),
+                            shape: BoxShape.circle,
+                          ),
+                          child: IconButton(
+                            icon: const Icon(Icons.skip_next_rounded, color: Colors.white, size: 28),
+                            tooltip: 'السورة التالية',
+                            onPressed: () => _playerService.playNext(),
+                          ),
                         ),
                         // Playback Speed button
                         GestureDetector(
@@ -694,7 +952,7 @@ class _PlayerScreenState extends State<PlayerScreen> with SingleTickerProviderSt
                       ),
                     ),
 
-                  const SizedBox(height: 20),
+                  const SizedBox(height: 10),
                 ],
               ),
             ),

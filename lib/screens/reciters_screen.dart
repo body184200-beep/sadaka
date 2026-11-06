@@ -14,39 +14,86 @@ class RecitersScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: const Text(
-          'اختيار القارئ',
+          'القارئ المعتمد',
           style: TextStyle(fontWeight: FontWeight.bold),
         ),
         centerTitle: true,
       ),
-      body: ListView.builder(
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-        itemCount: QuranData.reciters.length,
-        itemBuilder: (context, index) {
-          final reciter = QuranData.reciters[index];
-          final isSelected = playerService.currentReciter.id == reciter.id;
-
-          return FutureBuilder<List<int>>(
-            future: downloadManager.getDownloadedSurahNumbers(reciter.id),
-            builder: (context, snapshot) {
-              final downloadedCount = snapshot.data?.length ?? 0;
-
-              return Container(
-                margin: const EdgeInsets.only(bottom: 10),
-                decoration: BoxDecoration(
-                  color: isSelected
-                      ? const Color(0xFF0F4C3A).withValues(alpha: 0.09)
-                      : Theme.of(context).cardColor,
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(
-                    color: isSelected
-                        ? const Color(0xFF1B6B53)
-                        : Colors.grey.withValues(alpha: 0.15),
-                    width: isSelected ? 1.8 : 1,
+      body: Column(
+        children: [
+          Container(
+            width: double.infinity,
+            margin: const EdgeInsets.all(14),
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              gradient: const LinearGradient(
+                colors: [Color(0xFF0D3B2E), Color(0xFF1B6B53)],
+                begin: Alignment.topRight,
+                end: Alignment.bottomLeft,
+              ),
+              borderRadius: BorderRadius.circular(18),
+              boxShadow: [
+                BoxShadow(
+                  color: const Color(0xFF0D3B2E).withValues(alpha: 0.2),
+                  blurRadius: 10,
+                  offset: const Offset(0, 4),
+                ),
+              ],
+            ),
+            child: const Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Icon(Icons.verified_rounded, color: Color(0xFFD4AF37), size: 24),
+                    SizedBox(width: 8),
+                    Text(
+                      'المصحف المرتل كاملاً',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
+                ),
+                SizedBox(height: 6),
+                Text(
+                  'تم تخصيص التطبيق لتلاوة الشيخ محمد صديق المنشاوي (رحمه الله)، مع دمج جميع سور القرآن الكريم (114 سورة) كاملة للعمل بدون إنترنت.',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 13,
+                    height: 1.4,
                   ),
                 ),
-                child: ListTile(
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              ],
+            ),
+          ),
+          Expanded(
+            child: ListView.builder(
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
+              itemCount: QuranData.reciters.length,
+              itemBuilder: (context, index) {
+                final reciter = QuranData.reciters[index];
+                final isSelected = playerService.currentReciter.id == reciter.id;
+                const downloadedCount = 114;
+
+                return Container(
+                  margin: const EdgeInsets.only(bottom: 10),
+                  decoration: BoxDecoration(
+                    color: isSelected
+                        ? const Color(0xFF0F4C3A).withValues(alpha: 0.09)
+                        : Theme.of(context).cardColor,
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(
+                      color: isSelected
+                          ? const Color(0xFF1B6B53)
+                          : Colors.grey.withValues(alpha: 0.15),
+                      width: isSelected ? 1.8 : 1,
+                    ),
+                  ),
+                  child: ListTile(
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                   leading: Container(
                     width: 50,
                     height: 50,
@@ -146,9 +193,10 @@ class RecitersScreen extends StatelessWidget {
                 ),
               );
             },
-          );
-        },
-      ),
+          ),
+        ),
+      ],
+    ),
     );
   }
 }
